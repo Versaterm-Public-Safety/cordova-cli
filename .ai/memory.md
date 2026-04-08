@@ -1,90 +1,85 @@
-# [Project Name]
+# Apache Cordova CLI
 
-> [TODO: One-sentence description of what this project does]
+> Command-line interface tool for building, deploying, and managing Apache Cordova hybrid mobile applications.
 
 ## Tech Stack
 
-**Backend** (`[TODO: path]`):
-- [TODO: Framework, language, ORM, database, etc.]
+**CLI** (`src/`, `bin/`):
+- **Language**: JavaScript (Node.js, CommonJS modules)
+- **Runtime**: Node.js >= 18.0.0
+- **CLI argument parsing**: nopt
+- **Configuration storage**: configstore
+- **Process execution**: execa
+- **System info**: systeminformation
+- **Semantic versioning**: semver
+- **Core library**: cordova-lib (delegates all platform/plugin operations)
+- **Project scaffolding**: cordova-create
+- **Logging**: cordova-common CordovaLogger
 
-**Frontend** (`[TODO: path]`):
-- [TODO: Framework, language, styling, state management, etc.]
+**Testing** (`spec/`):
+- **Framework**: Jasmine
+- **Coverage**: nyc (Istanbul)
+- **Mocking**: rewire (for module-internal variable replacement)
 
 **Infrastructure**:
-- [TODO: Deployment, CI/CD, containerization, etc.]
+- **CI/CD**: GitHub Actions (Node CI) — matrix: Node 18.x/20.x/22.x on ubuntu/windows/macos
+- **Security scanning**: GitHub CodeQL (javascript, security-and-quality)
+- **Coverage reporting**: Codecov
+- **Linting**: ESLint with `@cordova/eslint-config/node`
+- **License**: Apache License 2.0 (Apache Software Foundation)
+- **Package registry**: npm (published as `cordova`)
 
 ## Commands
 
 ```bash
-# Start local development
-# [TODO]
+# Run all tests (lint + coverage)
+npm test
 
-# Run backend tests
-# [TODO]
+# Run linting only
+npm run lint
 
-# Run frontend tests
-# [TODO]
+# Run tests with coverage
+npm run cover
 
-# Run linting
-# [TODO]
-
-# Run type checking
-# [TODO]
+# Clean install and test (CI)
+npm cit
 ```
-
-## URLs (local dev)
-
-- [TODO: e.g., Frontend: http://localhost:3000]
-- [TODO: e.g., API: http://localhost:8000]
-- [TODO: e.g., API docs: http://localhost:8000/docs]
 
 ## Directory Structure
 
 ```
-[TODO: Map your project's directory structure]
+cordova-cli/
+├── bin/
+│   ├── cordova              # Unix entry point (#!/usr/bin/env node)
+│   └── cordova.cmd          # Windows entry point
+├── src/
+│   ├── cli.js               # Main CLI logic: arg parsing, command dispatch
+│   ├── help.js              # Help text loader (reads doc/ files)
+│   └── info.js              # System/project info collector
+├── cordova.js               # Public API re-export of cordova-lib
+├── spec/
+│   ├── cli.spec.js          # CLI unit tests
+│   ├── help.spec.js         # Help unit tests
+│   └── support/jasmine.json # Jasmine configuration
+├── doc/                     # Help text files (.md/.txt) per command
+├── scripts/                 # Bash completion, git hooks
+├── .github/workflows/       # CI configuration
+└── package.json
 ```
 
 ## Architecture Patterns
 
-[TODO: Describe your key architecture patterns. Examples:]
-<!--
-- Route -> Service -> Model (never skip the service layer)
-- JWT auth with short-lived access tokens + refresh tokens
-- Frontend: Zustand for auth state, TanStack Query for server state
--->
+- **Thin CLI wrapper**: cordova-cli is a thin argument-parsing layer over `cordova-lib`
+- **Command dispatch**: `src/cli.js` parses args with `nopt`, then delegates to `cordova-lib` methods (`cordova.build`, `cordova.plugin`, `cordova.platform`, etc.)
+- **Special commands handled locally**: `help` (reads doc files), `info` (system introspection), `config` (configstore CRUD), `create` (cordova-create), `version`
+- **Platform commands**: `build`, `run`, `emulate`, `prepare`, `compile`, `clean` — all forwarded to `cordova-lib` with platform names and options
+- **Entity commands**: `platform`, `plugin` — subcommand pattern (`add`, `remove`, `ls`)
+- **Event-based logging**: Uses `cordova-lib` events system with CordovaLogger subscriber
 
 ## Conventions
 
 - **Commits**: Conventional commits (`feat:`, `fix:`, `chore:`)
 - **Plans**: Save to `.ai/plans/YYYY-MM-DD-<feature-name>.md`
-- [TODO: Add language-specific conventions, e.g., snake_case for Python, camelCase for TypeScript]
-
-## Key Specs
-
-- `.ai/specs/01-architecture.md` — System architecture
-- `.ai/specs/product-spec.md` — Product requirements
-- `.ai/specs/dataflow.md` — Data flow diagrams
-
-## Agent Instructions
-
-Role-specific instructions in `.ai/agents/`:
-- `agent-planner.md` — Feature breakdown, spec writing, plan creation
-- `agent-test-eng.md` — TDD enforcement, test design
-- `agent-frontend.md` — UI development, responsive design
-- `agent-backend.md` — API/service development
-- `agent-security.md` — Security review, vulnerability assessment
-
-## Engineering Standards
-
-Shared standards in `.ai/standards/`:
-- `01-ux-responsive.md` — UX and responsive design
-- `02-tdd-core.md` — Test-driven development
-- `03-observability.md` — Logging, monitoring, metrics
-
-## Project Status
-
-See `.ai/plans/status.md` for current status, known issues, and in-progress work.
-
-## Implementation Plans
-
-Plans live in `.ai/plans/`. New plans follow the format: `.ai/plans/YYYY-MM-DD-<feature-name>.md`
+- **Code style**: ESLint with `@cordova/eslint-config/node`, single quotes, CommonJS require
+- **Testing**: Jasmine specs in `spec/`, rewire for internal mocking, spies on cordova-lib methods
+- **Licensing**: All source files require Apache 2.0 license header
